@@ -6,6 +6,11 @@ import { PokemonTypeSelection } from './PokemonTypeSelection'
 import { PokedexTable } from './PokedexTable'
 import { trpc } from '@/lib/trpc'
 
+type PokemonResponse = {
+  total: number
+  pokemon: any[]
+}
+
 export function FilterablePokedexTable() {
   const [selectedType, setSelectedType] = useState<string | undefined>(undefined)
   const [page, setPage] = useState(0)
@@ -18,11 +23,7 @@ export function FilterablePokedexTable() {
     }
   )
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = trpc.pokemon.getPokemonByType.useQuery(
+  const { data, isLoading, error } = trpc.pokemon.getPokemonByType.useQuery(
     {
       type: selectedType,
       limit: rowsPerPage,
@@ -33,6 +34,8 @@ export function FilterablePokedexTable() {
       keepPreviousData: true,
     } as Parameters<typeof trpc.pokemon.getPokemonByType.useQuery>[1]
   )
+
+  const typedData = data as PokemonResponse | undefined
 
   const handleSelectType = (type: string | undefined) => {
     setSelectedType(type)
@@ -50,7 +53,6 @@ export function FilterablePokedexTable() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Type Filter Controls */}
       <Box
         sx={{
           display: 'flex',
@@ -67,25 +69,23 @@ export function FilterablePokedexTable() {
           />
         </Box>
 
-        {data && (
+        {typedData && (
           <Typography variant="body2" color="text.secondary" sx={{ flex: '0 0 auto' }}>
-            {data.total} Pokémon
+            {typedData.total} Pokémon
             {selectedType ? ` of type ${selectedType}` : ' total'}
           </Typography>
         )}
       </Box>
 
-      {/* Error State */}
       {error && (
         <Alert severity="error" sx={{ borderRadius: 2 }}>
           {error.message}
         </Alert>
       )}
 
-      {/* Table */}
       <PokedexTable
-        pokemonList={data?.pokemon ?? []}
-        total={data?.total ?? 0}
+        pokemonList={typedData?.pokemon ?? []}
+        total={typedData?.total ?? 0}
         page={page}
         rowsPerPage={rowsPerPage}
         onPageChange={handlePageChange}

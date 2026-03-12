@@ -21,6 +21,11 @@ const EXAMPLE_SEARCHES = [
   'eevee, vaporeon, jolteon, flareon',
 ]
 
+type PokemonResponse = {
+  total: number
+  pokemon: any[]
+}
+
 export default function Part2Page() {
   const [inputValue, setInputValue] = useState('')
   const [searchNames, setSearchNames] = useState<string[] | null>(null)
@@ -41,11 +46,14 @@ export default function Part2Page() {
     } as Parameters<typeof trpc.pokemon.getPokemonByNames.useQuery>[1]
   )
 
+  const typedData = data as PokemonResponse | undefined
+
   const handleSearch = () => {
     const names = inputValue
       .split(',')
       .map((n) => n.trim().toLowerCase())
       .filter(Boolean)
+
     if (names.length > 0) {
       setSearchNames(names)
       setPage(0)
@@ -58,17 +66,18 @@ export default function Part2Page() {
 
   const handleExampleClick = (example: string) => {
     setInputValue(example)
+
     const names = example
       .split(',')
       .map((n) => n.trim().toLowerCase())
       .filter(Boolean)
+
     setSearchNames(names)
     setPage(0)
   }
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
-      {/* Header */}
       <Box sx={{ mb: 5 }}>
         <Typography
           variant="caption"
@@ -82,6 +91,7 @@ export default function Part2Page() {
         >
           Part 02
         </Typography>
+
         <Typography
           variant="h3"
           sx={{
@@ -93,13 +103,13 @@ export default function Part2Page() {
         >
           Multi-Pokémon Fetch
         </Typography>
+
         <Typography variant="body1" color="text.secondary">
           Enter multiple Pokémon names separated by commas to fetch and display
           them in a sortable table.
         </Typography>
       </Box>
 
-      {/* Search Form */}
       <Paper
         sx={{
           p: 3,
@@ -119,6 +129,7 @@ export default function Part2Page() {
             sx={{ flex: '1 1 300px' }}
             helperText="Enter names separated by commas"
           />
+
           <Button
             variant="contained"
             startIcon={<SearchIcon />}
@@ -130,11 +141,11 @@ export default function Part2Page() {
           </Button>
         </Box>
 
-        {/* Example buttons */}
         <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
           <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5 }}>
             Try:
           </Typography>
+
           {EXAMPLE_SEARCHES.map((ex) => (
             <Chip
               key={ex}
@@ -156,24 +167,23 @@ export default function Part2Page() {
         </Box>
       </Paper>
 
-      {/* Error */}
       {error && (
         <Alert severity="error" sx={{ borderRadius: 2, mb: 3 }}>
           {error.message}
         </Alert>
       )}
 
-      {/* Results */}
       {(searchNames || isLoading) && (
         <Box>
-          {data && (
+          {typedData && (
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Found {data.total} of {searchNames?.length ?? 0} requested Pokémon
+              Found {typedData.total} of {searchNames?.length ?? 0} requested Pokémon
             </Typography>
           )}
+
           <PokedexTable
-            pokemonList={data?.pokemon ?? []}
-            total={data?.total ?? 0}
+            pokemonList={typedData?.pokemon ?? []}
+            total={typedData?.total ?? 0}
             page={page}
             rowsPerPage={rowsPerPage}
             onPageChange={(newPage) => setPage(newPage)}

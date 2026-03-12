@@ -19,7 +19,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
         defaultOptions: {
           queries: {
             staleTime: 5 * 60 * 1000, // 5 minutes
-            gcTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
+            cacheTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
             refetchOnWindowFocus: false,
             retry: 1,
           },
